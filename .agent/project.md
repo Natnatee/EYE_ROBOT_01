@@ -1,4 +1,4 @@
-# 📋 Project: ESP32-C3 WiFi Test
+# 📋 Project: EYE_ROBOT_01
 
 ## 1. Project Overview
 โปรเจกต์ทดสอบการเชื่อมต่อ WiFi ของบอร์ด ESP32-C3 Super Mini
