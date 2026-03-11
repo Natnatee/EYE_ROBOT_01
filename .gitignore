@@ -1,0 +1,16 @@
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# Editor
+.vscode/
+
+# Firmware files
+*.bin
+*.hex
+*.elf
+
+# OS
+Thumbs.db
+.DS_Store
