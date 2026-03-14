@@ -1,41 +1,63 @@
-#include <Arduino.h>
-#include "display_module.h"
-#include "eye_module.h"
+#include "display.h"
+#include "eye_mode.h"
+#include "table_mode.h"
+#include "input.h"
+#include "wifi_module.h"
 
-unsigned long last_emotion_change = 0;
-const unsigned long INTERVAL = 3000; // 3 วินาที
-int current_state = 0;
+enum AppMode {
+  MODE_EYE,
+  MODE_TABLE
+};
+
+static AppMode currentMode = MODE_EYE;
 
 void setup() {
-    Serial.begin(115200);
-    
-    // เริ่มต้นระบบหน้าจอ
-    display_init();
-    eye_init();
-    
-    Serial.println("EYE_ROBOT_01: Display System Ready!");
+  Serial.begin(115200);
+  delay(500);
+  Serial.println("=== ESP32-C3 OLED App ===");
+
+  input_init();
+  display_init();
+  wifi_init();
+  eye_mode_init();
+  table_mode_init();
+
+  Serial.println("Ready!");
 }
 
 void loop() {
-    unsigned long now = millis();
-    
-    if (now - last_emotion_change >= INTERVAL) {
-        last_emotion_change = now;
-        
-        EyeEmotion emotion = (EyeEmotion)current_state;
-        
-        // แสดงชื่ออารมณ์ใน Serial เพื่อ Debug
-        switch(emotion) {
-            case EMOTION_NORMAL: Serial.println("Emotion: Normal"); break;
-            case EMOTION_HAPPY:  Serial.println("Emotion: Happy"); break;
-            case EMOTION_ANGRY:  Serial.println("Emotion: Angry"); break;
-            case EMOTION_SLEEPY: Serial.println("Emotion: Sleepy"); break;
-            case EMOTION_CRAZY:  Serial.println("Emotion: Crazy"); break;
-        }
-        
-        eye_draw(emotion);
-        
-        // วนสถานะ 0-4
-        current_state = (current_state + 1) % 5;
+  input_update();
+  wifi_update();
+
+  // จัดการปุ่ม Mode (สลับโหมด: Eye ↔ Table)
+  if (input_btn_mode()) {
+    if (currentMode == MODE_EYE) {
+      currentMode = MODE_TABLE;
+      Serial.println("Mode: TABLE");
+    } else {
+      currentMode = MODE_EYE;
+      Serial.println("Mode: EYE");
     }
+  }
+
+  // จัดการปุ่ม Action (เปลี่ยนอารมณ์ใน Eye หรือ Scroll ใน Table)
+  if (input_btn_action()) {
+    if (currentMode == MODE_EYE) {
+      EyeEmotion next = (EyeEmotion)((eye_mode_get_emotion() + 1) % EMOTION_COUNT);
+      eye_mode_set_emotion(next);
+      Serial.printf("Emotion: %s\n", eye_mode_emotion_name());
+    } else if (currentMode == MODE_TABLE) {
+      table_mode_scroll_down();
+      Serial.println("Table: Scroll Down");
+    }
+  }
+
+  // Render ตามโหมดปัจจุบัน
+  if (currentMode == MODE_EYE) {
+    eye_mode_update();
+  } else if (currentMode == MODE_TABLE) {
+    table_mode_update();
+  }
+
+  delay(16);  // ~60 FPS
 }
