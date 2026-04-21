@@ -79,6 +79,7 @@ void wifi_init() {
       return;
     }
     
+    display_show_wifi_status(currSsidBuf, "Connecting...");
     Serial.print(".");
     delay(100);
   }
@@ -97,8 +98,9 @@ void wifi_init() {
   struct tm timeinfo;
   int retry = 0;
   while (!getLocalTime(&timeinfo) && retry < 10) {
+    display_show_wifi_status(currSsidBuf, "SYNC TIME...");
     Serial.print(".");
-    delay(500);
+    delay(100); // ลด delay ลงทีละนิดเพื่อให้ spinner หมุนลื่นขึ้น
     retry++;
   }
   
