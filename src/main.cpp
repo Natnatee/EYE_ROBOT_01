@@ -1,5 +1,6 @@
 #include "display.h"
 #include "eye_mode.h"
+#include "clock_mode.h"
 #include "dino_mode.h"
 #include "input.h"
 #include "wifi_module.h"
@@ -115,6 +116,7 @@ void setup() {
   display_init();
   wifi_init();
   eye_mode_init();
+  clock_mode_init();
   dino_mode_init();
 
   // ตั้ง mood swing timer เริ่มต้น
@@ -135,6 +137,10 @@ void loop() {
 
   // ===== ปุ่ม Long Press → สลับโหมด Eye → Clock → Dino → Eye =====
   if (input_btn_long_press()) {
+    if (wifi_is_portal_active()) {
+      wifi_stop_ap_portal(); // ปิด portal ถ้าเปิดอยู่
+    }
+    
     if (currentMode == MODE_EYE) {
       currentMode = MODE_CLOCK;
       Serial.println("Mode: CLOCK");
@@ -151,19 +157,10 @@ void loop() {
 
   // ===== โหมดนาฬิกา =====
   if (currentMode == MODE_CLOCK) {
-    oled.clearBuffer();
-    
-    oled.setFont(u8g2_font_logisoso24_tf);
-    const char* timeStr = wifi_get_time_string();
-    int tw = oled.getStrWidth(timeStr);
-    oled.drawStr((SCREEN_W - tw) / 2, 42, timeStr);
-    
-    oled.setFont(u8g2_font_6x12_tr);
-    const char* statusStr = wifi_get_status_string();
-    int dw = oled.getStrWidth(statusStr);
-    oled.drawStr((SCREEN_W - dw) / 2, 60, statusStr);
-    
-    oled.sendBuffer();
+    if (input_btn_short_press()) {
+      clock_mode_toggle_info();
+    }
+    clock_mode_update();
     delay(16);
     return;
   }

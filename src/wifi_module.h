@@ -1,11 +1,12 @@
 #pragma once
 #include <Arduino.h>
 
-// --- WiFi Config ---
-#define WIFI_SSID "Digitalnatives3"
-#define WIFI_PASS "BC202$1$9@"
+const char* wifi_get_ssid();
 
 void wifi_init();
+void wifi_start_ap_portal();
+void wifi_stop_ap_portal();
+bool wifi_is_portal_active();
 void wifi_update();
 bool wifi_is_connected();
 const char* wifi_get_time_string();
