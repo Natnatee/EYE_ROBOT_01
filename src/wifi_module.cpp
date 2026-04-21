@@ -89,17 +89,16 @@ void wifi_update() {
   // Update time cache every 1 second
   if (currentMillis - lastTimeCheck >= 1000) {
     lastTimeCheck = currentMillis;
-    struct tm timeinfo;
-    if (getLocalTime(&timeinfo)) {
-      sprintf(timeString, "%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min);
-      cachedHour = timeinfo.tm_hour;
-      cachedMinute = timeinfo.tm_min;
-      timeSynced = true;
-    } else {
-      if (!timeSynced) {
-        strcpy(timeString, "--:--");
-        cachedHour = -1;
-        cachedMinute = -1;
+    
+    // เฉพาะตอน WiFi ต่อแล้วถึงจะลองดึงเวลา
+    if (WiFi.status() == WL_CONNECTED) {
+      struct tm timeinfo;
+      // timeout 10ms ไม่ให้บล็อก loop (default คือ 5000ms!)
+      if (getLocalTime(&timeinfo, 10)) {
+        sprintf(timeString, "%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min);
+        cachedHour = timeinfo.tm_hour;
+        cachedMinute = timeinfo.tm_min;
+        timeSynced = true;
       }
     }
   }
