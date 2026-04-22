@@ -59,7 +59,11 @@ void wifi_init() {
   WiFi.begin(); 
   
   String savedSsid = WiFi.SSID();
-  if (savedSsid == "") savedSsid = "No Saved WiFi";
+  if (savedSsid == "") {
+    savedSsid = "omgdigital_4064";
+    WiFi.begin("omgdigital_4064", "60F&003ii4@4");
+  }
+  
   strcpy(currSsidBuf, savedSsid.c_str());
 
   Serial.print("Connecting to WiFi: ");
@@ -68,7 +72,7 @@ void wifi_init() {
   display_show_wifi_status(currSsidBuf, "Connecting...");
   
   unsigned long wifiStart = millis();
-  const unsigned long WIFI_TIMEOUT = 10000; // 10 วินาที
+  const unsigned long WIFI_TIMEOUT = 30000; // 30 วินาที
   
   while (WiFi.status() != WL_CONNECTED) {
     if (millis() - wifiStart >= WIFI_TIMEOUT) {
